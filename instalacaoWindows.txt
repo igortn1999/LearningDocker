@@ -1,0 +1,6 @@
+#Funcionamento do docker no windows
+
+Caso a versão do Windows seja um pouco mais antiga, o funcionamento da instalação do docker vai funcionar exatamente como num MacOS
+
+Caso seja uma versão mais atualizada, existe uma camada de compatibilidade com Linux nas últimas versões do Windows, criando uma certa compatibilidade entre o Kernel do Windows e do Linux.
+Sendo asssim, essa camada recebe as instruções enviadas pelo docker como se fosse um Kernel Linux e ˜Traduz" isso para o Kernel Windows.
