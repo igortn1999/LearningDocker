@@ -1,0 +1,64 @@
+#O que é docker? 
+
+1- Docker é uma Tecnologia de Virtualização, mas é DIFERENTE das tradicionais Máquinas Virtuais, que abrigam um sistema operacional completo1. 
+
+2- O Docker é uma ENGINE de administração de Containers. Ou seja, um serviço de administra os containers. 
+            Containers são processos isolados/segregados do sistema Host que podem conter aplicações e todas as suas dependências. Os containers têm também seu proprio sistema de arquivos próprio e isolado.
+   A Vantagem disso que um Container precisa de muito menos recursos do que um VM, pois usa alguns recursos da máquina Host.
+
+3- Docker se baseia na tecnologia Linux Containers (LXC). 
+
+4- Docker é uma tecnologia Open Source desenvolvida na linguagem GO.
+
+5- Virtualização baseada em Software (SO).  
+
+6 - A máquina Host e o Container compartilham o Kernel.
+
+7- Empacota Softwares com vários níveis de isolamento. 
+
+#Por que não uma VM? 
+
+Uma VM, assim como um Container, permite um isolamento do Sistema Host, além de uma elasticidade no alocamento de recursos. 
+O Container, porém, exige muito menos recursos para ser iniciado e mantido, de forma que seria possível rodar 20 containers em um computador comum, mas seria muito difícil rodar 20 VMs. 
+Isso ocorre Porque os containers não precisam rodar Sistemas Operacionais Isolados, cada um com seu próprio kernel.
+
+O conceito de container já existia antes do Docker. O que o docker fez foi criar uma "interface" entre o usuário e os containers para que seja muito mais simples criar, utilizar e gerenciar os containers.
+
+#O que são Containers? 
+
+1- Segregação de processos no mesmo Kernel (Isolamento): Um processo Isolado de todos os outros é criado usando o Kernel da máquina host. Esse processo pode criar subprocessos, mas nenhum deles irá alterar processos fora do container.
+   É uma boa prática focar um container no uso de uma única aplicação, como um Banco de Dados ou um Servidor. Isso permite que cada serviço permaneça isolado e torna possível alocar os recursos necessários para cada um 
+
+2- Sistema de Arquivos criado a partir de uma Imagem. Assim como o processo, o sistema de arquivos é completamente isolado do sistema da máquina host.
+
+3- Ambientes leves e portáteis nos quais as aplicações serão executadas. 
+
+4- Dentro desse ambiente Isolado, não apenas a aplicação é abrigada mas também todas as suas dependências/bibliotecas/ninários que são necessários para q ela seja executada.
+
+5- Algo entre chroot e uma VM. 
+
+#O que são Imagens?
+
+1- Um modelo de sistema de arquivos (somente-leitura) usado para criar Containers (Algo como um Molde)
+    Todo container se baseia em uma imagem para ser criado
+
+2- Imagens são criadas a partir de um processo chamado Build. No processo de build, existe um arquivo descritor que informa etapa por etapa quais são os procedimentos a serem seguidos para a criação da Imagem.
+    A partir de um Arquivo descritor, é possível montar sempre a mesma imagem quantas vezes forem necessárias.
+
+3- Armazenamento em Repositorio Registry: Existem registros como o DockerHub que armazenam as imagens criadas. 
+
+4- Imagens são compostas por uma ou mais Layers. Cada Layer representa uma ou mais mudanças no Sistema de Arquivos. 
+    As camadas também podem ser chamadas de Imagens Intermediárias.
+    Apenas a última Layer pode ser alterada quando um container for iniciado.
+    O grande objetivo de utilizar camadas é o reuso. É possível compor imagens a partir de camadas de outras imagens. Se você baixa uma imagem com 10 layers, e você já tem uma imagem que contém as primeiras layers dessas 10, só será preciso baixar as ultimas 3.
+
+#Container vs Imagem
+
+Reiterando: 
+
+Se for pensar de um ponto de vista de programção orientada ao objeto, pode-se fazer o paralelo entre alguns conceitos:
+
+    Uma Imagem do docker seria como uma classe. Uma classe serve de modelo para a criação de um ou vários objetos. 
+    Da mesma forma, um Container seria uma instância de objeto, criado a partir desse molde, no caso, a Imagem.
+
+    A partir de uma única imagem, pode-se iniciar N containers.
