@@ -1,0 +1,25 @@
+docker run seria como a concatenação de 4 comandos:
+        docker image pull -> Baixa uma imagem do Registry para a máquina local
+        docker container create -> Criação do container
+        docker container start -> Inicialização do container 
+        docker container exec -> Execução do container em modo interativo.
+
+        Sempre que o docker run for utilizado, um novo Container será criado.  
+
+docker start serve para iniciar um container já existente. 
+        
+Flags:
+        flag --rm ao executar o docker container run: este container será excluido assim que o processo terminar.
+        flag -i: o container será iniciado em modo interativo.
+        flag -d: o container será iniciado em modo Daemon. Assim, o processo não será interrompido.
+        flag -t: o terminal do Container será acessado.
+        flag -a: anexar o terminal do container ao da maquina.
+        A flag --name permite dar um nome para seu container. Ex: docker container run --name mydeb -it debian bash
+
+Existem 2 modos básicos do docker para executar Containers:
+    Modo Daemon: o container fica rodando como processo em background (Mais utilizado).
+    Modo Interativo: serve para entrar no container e fazer verificações ou qualquer coisa que seja necessária.
+
+Os containers são por natureza isolados, mas para que tenham alguma utilidade, eles precisam estar acessíveis de alguma forma, seja por uma porta ou por uma pasta em comum com o sistema, por exemplo.
+O ideal é que o isolamento seja preservado ao maximo possível, abrindo para o mundo exterior o minimo possível.
+

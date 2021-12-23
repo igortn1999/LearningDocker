@@ -1,0 +1,26 @@
+Uma das formas de deisponibilizar o container para ser acessado é mapeando uma porta de um processo do container para uma porta da máquina
+
+    Como exemplo, é possível criar um container que abriga um servidor nginx: 
+        docker run -p 8080:80 nginx
+
+        A flag -p permite fazer o mapeamento de porta.
+            O primeiro valor (antes de ":") é a porta do container que será exposta para o mundo exterior. O segundo valor é a porta interna que será utilizada pelo nginx.
+            Ou seja, as pessoas acessando esse container utilizarão a porta 8080 para acessar o serviço inicidado na porta 80.
+
+        Dessa forma, o servidor ficará acessível em http://localhost:8080
+
+Outra forma de tornar um container acessível é por meio de um volume comum. 
+
+    Será usada uma porta também, da mesma forma que o exemplo anterior. A diferença agora é que será usada a flag -v:
+        Docker run -p 8080:80 -v $(pwd)/html:usr/share/nginx/html
+        
+        O que está acontecendo é que um volume está sendo alocado através da flag -v. A pasta que fica em usr/share/nginx/html dentro do container é onde o nginx lê os arquivos html.
+        O que está sendo feito é mapear (ou substituir) o uso dessa pasta dentro do container para a pasta que está em <DiretórioAtual>/html (dentro da maquina host).
+        Importante lembrar que, por usar uma variável $(pwd), o comando precisa ser rodado no lugar certo.
+
+    Para utilizar esse servidor em background, é necessário inicia-lo em modo daemon:
+        docker container run -d --name ex-daemon-basic -p 8080:80 -v $(pwd)/html:usr/share/nginx/html
+    Para para esse servidor rodando em background: 
+        docker container stop ex-daemon-basic
+    Para acessar os logs desse container:
+        docker container logs ex-daemon-basic
