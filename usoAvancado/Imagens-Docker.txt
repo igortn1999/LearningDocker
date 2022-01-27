@@ -1,0 +1,85 @@
+Comandos de gerenciamento de imagem
+
+    docker image pull -> responsável por baixar uma imagem diretamente do docker hub.
+    docker image ls -> listar as imagens já baixadas
+    docker image rm -> remover uma imagem (ou mais)
+    docker image inspect -> mostra um documento em formato JSON com várias informações importantes sobre uma Imagem.
+    docker image tag -> adicionar ou alterar a tag de uma Imagem
+    docker image build -> Gerar uma imagem a partir de um arquivo descritor.
+    docker image push -> Enviar uma imagem para algum repositorio docker. 
+
+Dockerfile
+    Dockerfile é um documento sem extenção (que NECESSARIAMENTE precisa se chamar Dockerfile) que serve para construir uma nova Imagem.
+    A sua nova imagem pode ser baseada em outra já existente. Nesse caso, com o IMPORT isso deve ser especificado junto da tag da versão.
+    
+    Depois do documento Dockerfile estar pronto, basta buildar.
+        docker build -t ex-simple-build .
+
+        a flag -t serve para especificar o nome da tag da Imagem
+        o ultimo argumento é a pasta em que se encontra o arquivo Dockerfile
+
+Argumentos/ parâmetros com Dockerfile
+    Pode-se fazer um Docker file que contém um ou mais argumentos.
+    Esses argumentos podem ser usados como parâmetros na hora da criação da Imagem.
+
+    Dentro do Dockerfile, para criar um argumento:
+        
+        ARG <NomeDoArgumento>=<NomeValorPadrão>
+    
+    Pode-se aplicar a este argumento, por exemplo, uma variável de ambiente:
+        
+        ENV <NomeDoArgumento>=${<NomeDoArgumento} 
+
+    Assim, por padrão o argumento recebe um um valor, mas esse valor pode ser alterado ao criar a imagem.
+
+    Criando a imagem normalmente:
+        
+        docker image build -t ex-build-arg .
+
+        depois de criar a imagem, para verificar o valor atribuido ao argumento: 
+
+            docker container run ex-buil-arg bash -c 'echo $S3_BUCKET'
+
+            Como o argumento não foi passada como parâmetro no image build, o valor padrão será exibido. 
+
+    Criando a imagem usando parâmetro: 
+
+        docker image build --build-arg S3_BUCKET=myapp -t ex-build-arg .
+
+        agora, ao seguir o mesmo procedimento para verificar o valor atribuido, o valor mostrado será 'myapp'
+
+    Também é possível inspecionar e a Imagem usando o docker inspect:
+        
+        docker image inspect --format="{{index .Config.Labels \"maintainer\"}}" ex-build-arg
+            
+            o --format possibilita a criação de um filtro para que seja possível selecionar qual informação será retornada 
+
+    Instruções de povoamento: 
+        
+        Dentro da pasta build-com-copy foi criado um arquivo index.html que referencia um outro arquivo, chamado conteudo.html. Depois foi montado o arquivo Dockerfile.
+        Dentro do Dockerfile foi especificado para que o arquivo conteudo.hmtl fosse criado em um local especifico do container e que todos os arquivos .html da pasta onde está o Dockerfile fosse copiados para dentro dessa mesma pasta.
+        Depois é só rodar $ docker image build -t ex-build-copy . dentro da pasta que contém o Dockerfile para criar a imagem, e depois executar $ docker container run -p 80:80 ex-build-copy
+
+Instruções para execução do container:
+    Dentro da pasta build-dev, foi criado um simples arquivo index.html e um servidor python para expor esse arquivo (run.py)
+    Também foi criado um aqruivo Dockerfile, baseado na imagem do python3.6.
+        Dentro do Dockerfile, uma layer foi adicionada com o comando RUN, que significa que os comandos especificados serão rodados. Para não ficar criando uma Layer para cada comando, vários comandos foram concatenados nesse mesmo RUN.
+        USER identifica o usuário que será utilizado dentro do container, ele foi criado em um dos comandos no RUN.
+        VOLUME especifica que uma pasta será identificado como volume que poderá ser mapeado e acessado externamente.
+        WORKDIR especifica qual será o diretório de trabalho ao iniciar o container.
+        EXPOSE determina a porta que será exposta para que o container possa ser acessado externamente.
+
+        ENTRYPOINT especifica qual será o programa utilizado pelo comando CMD para rodar um arquivo específico.
+        CMD executa no terminal do container um arquivo específico, através do programa determinado no ENTRYPOINT.
+
+    Agora já é possível montar a nova imagem que foi descrita no Dockerfile. 
+        $ docker image build -t ex-build-dev .
+        (isso levando em conta que o diretório atual é o diretório que contém o Dockerfile)
+
+    Agora que a imagem já está montada, o container pode ser criado.
+        $ docker container run -it -v $(pwd):/app -p 80:8000 --name python-server ex-build-dev
+        a flag -v serve para especificar que um volume atual será usado como uma pasta no container. nesse caso, está sendo explicitado que a pasta /app do container aponta para o diretório atual, representado pela variável $(pwd)
+        a flag -p mapeia a porta 80 do computador para a porta 8000 do container
+
+Algo importante a ser lembrado é que é possível criar uma Layer nova em uma imagem com uma concatenação de vários comandos. Assim, não é preciso fazer uma Layer nova para cada comando
+Além disso, é sempre uma boa prática colocar mais para o final do arquivo Dockerfile, que irá gerar a imagem, as Layers com as coisas que mudam mais frequência, para que possa haver um melhor reaproveitamennto.
