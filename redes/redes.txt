@@ -1,0 +1,117 @@
+Para listar os tipos de redes com que o docker trabalha, pode-se utilizar o seguinte comando:
+    $ docker network ls
+
+Para inspecionar um tipo de rede:
+    $ docker network inspect <rede>
+
+    No caso da rede Bridge, é possível identificar uma subnet (ip classe B) 172.17.0.0, onde os dois primeiros números representam a rede e os dois últimos ficam disponíveis para os containers criados.
+
+Para verificar as redes dentro dos containers, o seguinte comando será executado:
+    
+    $ docker container run --rm alpine ash -c "ifconfig"
+        Um container será criado (e imediatamente removido por causa da flag --rm) com base na imagem alpine. Depois o ash (uma versão mais leve do bash) será executado, e nele o comando ifconfig será executado.
+
+    Ao rodar esse comando dessa forma, é possívem ver duas interfaces de rede, onde uma delas mostra um ip próprio.
+
+Características dos tipos de rede: 
+
+    None Network:
+       
+       Container sem nenhum tipo de rede. 
+       Quando um container com rede tipo None é criado, esse container fica isolado de outros containers e do mundo exterior.
+       Não é possívevel acessar via rede, mas ainda é possível acessa-lo via terminal ou através de volumes.
+       É o container mais seguro e mais adequado para aplicações que não envolvem conexão com a rede.
+
+       Exemplo de criação de container baseado na imagem do debian com tipo de rede None:
+            $ docker container run -d --net none debian
+        
+        Para observar as redes de um container com None Network, será executado o seguinte comando:
+            $ docker container run --rm --net none alpine ash -c "ifconfig"
+
+        Agora, é possível perceber que só uma interface de rede loopback padrão "lo" que não tem acesso nenhum para o mundo exterior.
+
+    Bridge Network (padrão):
+        
+        Com o objetivo de testar a rede, serão criados 2 containers. A ideia é conseguir fazer um ping de um para o outro.
+
+             Criando o PRIMEIRO container: 
+                 $ docker container run -d --name container1 alpine sleep 1000
+
+                 Monstrando as interfaces de rede:
+                     $ docker container exec -it container1 ifconfig
+
+                     Assim foi possível identificar que 172.17.0.2 é o ip desse container. 
+
+             Criando o SEGUNDO container:
+                 $ docker container run -d --name container2 alpine sleep 1000
+
+                 Monstrando as interfaces de rede:
+                     $ docker container exec -it container2 ifconfig
+
+                     O ip desse container é 172.17.0.3
+             
+             Fazendo o ping de um container para o outro:
+
+                 pingando o segundo container a partir do primeiro:
+
+                     $ docker container exec -it container1 ping 172.17.0.3
+                 
+                 Também é possível acessar sites externamente:
+
+                     $ docker container exec -it container1 ping www.google.com
+
+        Como segundo exercício, agora dois containeres em redes diferentes terão que estabelecer uma conexão
+        
+            Criando uma nova rede: 
+                $ docker network create --driver bridge rede_nova 
+                    Dessa forma, uma nova rede é criada utilizando o driver de Bridge Network
+
+                Ao verificar as redes com $ docker network ls:
+                    É possível ver que agora existem duas redes com o driver Bridge. Uma delas é a rede padrão, chamada "bridge" e a outra é a que acabou de ser criada, "rede_nova"
+                
+                Ao inspecionar essa nova rede com $ docker network inspect rede_nova:
+                    O endereçamento dessa nova rede agora é 172.18.0.0, ou seja, todo os ip's dos containers dessa rede irão começar com 172.18.
+
+                Criando um novo container dentro dessa nova rede:
+                    $ docker container run -d --name container3 --net rede_nova alpine sleep 1000 
+                
+                Verificando as interfaces de rede do novo container: 
+                    $ docker exec -it container3 ifconfig
+
+                    O ip do container3 é 172.18.0.2
+                
+                Agora a ideia é fazer um ping a partir do container3 para o container1
+
+                    $ docker container exec -it container3 ping 192.17.0.2
+
+                    Isso irá falhar porque os containers estão em redes diferentes e independentes, e não foi feita nenhuma configuração para que essas redes se counicassem.
+
+                Configurar o container3 para se comunicar com containers na rede "bridge":
+
+                    $ docker network connect bridge container3 
+                    
+                    Isso cria uma nova interface de rede dentro do container 3 (que pode ser acessada com $ docker container exec -it container3 ifconfig), onde agora ele tem um ip dentro da rede "bridge"
+                    Portanto, o container3 tem também um ip dentro da rede "bridge" (172.17.0.4)
+                    
+                    Testando novamente o ping do container3 para o container1: 
+                        $ docker container exec -it container3 ping 192.17.0.2
+
+                        Agora os pacotes chegam ao container1 sem problema.
+
+                Também é possível desconectar o container3 da rede bridge:
+                    $ docker network disconnect bridge container3
+
+    Host Network:
+        
+        A rede do tipo Host tem um nível de proteção mais baixo, porque a camada de isolamento da Bridge Network não existe.
+        Existe um acesso direto às interfaces de rede da máquina Host, o que torna a conexão um pouco mais rápida ao custo de ser menos segura.
+        
+        Criando um container com Host Network:
+            $ docker container run -d --name container4 --net host alpine sleep 1000
+        
+        Com o container4 criado, pode-se verificar as interfaces de rede dele:
+            $ docker container exec -it container4 ifconfig
+
+            Todas as interface de rede da maquina host pode ser vistas no container.
+
+    Via de regra, o modo padrão é o mais apropriad para a imensa maioria dos projetos.
